@@ -13,6 +13,8 @@ from torchvision.transforms.functional import resize
 
 from environments.utils import VisualObsWrapper
 
+from variables.reward_map import reward_maps
+
 
 class FrozenActions(Enum):
     move_west = "move west"
@@ -24,7 +26,7 @@ class FrozenActions(Enum):
 class FrozenLakeText(FrozenLakeEnv):    
     """Wrapper for the FrozenLake environment that returns text observations."""
     metadata = {'render_modes': ['rgb_array'], 'render_fps': 30}
-    def __init__(self, map_size=8, fov=3, fixed_orientation=False, is_slippery=True, seed=0, first_person=False):
+    def __init__(self, map_size=8, fov=3, fixed_orientation=False, is_slippery=True, seed=0, first_person=False, reward_map=None, env_idx=None):
         desc = generate_random_map(size=map_size, seed=seed)
         super().__init__(desc=desc, is_slippery=is_slippery, render_mode='rgb_array')
         self.seed = seed
@@ -32,7 +34,8 @@ class FrozenLakeText(FrozenLakeEnv):
         self.fixed_orientation = fixed_orientation
         self.is_slippery = is_slippery
         self.first_person = first_person
-
+        self.reward_map = reward_map
+        self.env_idx = env_idx
         self.action_enum = FrozenActions
 
         self.action2label = {0: 'move west', 1: 'move south', 2: 'move east', 3: 'move north'}
@@ -117,6 +120,11 @@ class FrozenLakeText(FrozenLakeEnv):
         
         obs, reward, done, truncated, info = super().step(action)
         self.last_action = action
+
+        if self.reward_map == "GPT" and self.env_idx != -1:
+            x, y = self._get_pos(self.s) - self._get_pos(self.prev_s)
+            rewards = reward_maps.get_reward_map(self.env_idx)
+            reward = rewards[x][y]
         
         # get the effective action
         x, y = self._get_pos(self.s) - self._get_pos(self.prev_s)
@@ -194,7 +202,9 @@ def make_frozen_env(
     save_video_every=100,
     seed=None,
     save_stats=False,
-    first_person=True
+    first_person=True,
+    reward_map=None,
+    env_idx=None,
 ):   
     def resize_obs(obs):
         obs = torch.from_numpy(obs).permute(2, 0, 1)
@@ -203,7 +213,7 @@ def make_frozen_env(
         return obs
     
     def frozen_thunk():
-        frozen_env = gym.make('FrozenLakeText-v0', map_size=area, is_slippery=is_slippery, seed=seed, fov=fov, fixed_orientation=fixed_orientation, max_episode_steps=100, first_person=first_person)
+        frozen_env = gym.make('FrozenLakeText-v0', map_size=area, is_slippery=is_slippery, seed=seed, fov=fov, fixed_orientation=fixed_orientation, max_episode_steps=100, first_person=first_person, reward_map=reward_map, env_idx=env_idx)
         frozen_env = VisualObsWrapper(frozen_env, transform=resize_obs)
         if save_video:
             frozen_env = RecordVideo(frozen_env, video_folder=outdir, episode_trigger=lambda ix: ix % save_video_every==1)

@@ -39,6 +39,11 @@ from environments.hanoi_env import make_hanoi_env
 from environments.minigrid_env import make_minigrid_env
 from PIL import Image
 
+
+from variables.reward_map import reward_maps
+
+
+
 def evaluate_policy(agent, *, env, num_eval_episodes, accelerator):
     all_returns = []
     agent.eval()
@@ -143,7 +148,7 @@ def instanciate_model(model_string, observation_space, action_enum, num_prompt_i
     else:
         raise Exception(f'the model you are trying to load {model_string} is not supported yet!')
 
-def instanciate_envs(runs_directory, is_main_process, specifc_env_seed, **kwargs):
+def instanciate_envs(runs_directory, is_main_process, specifc_env_seed, reward_map, **kwargs):
     # create vector env (you may use also AsyncVectorEnv)
     if kwargs['env_id'] == "CrafterReward-v1":
         envs = gym.vector.SyncVectorEnv(
@@ -206,7 +211,9 @@ def instanciate_envs(runs_directory, is_main_process, specifc_env_seed, **kwargs
                 save_video=kwargs['save_video'] and i == 0 and is_main_process,
                 save_video_every=kwargs['save_video_every'],
                 save_stats=kwargs['save_stats'],
-                first_person=kwargs['first_person']
+                first_person=kwargs['first_person'],
+                reward_map=reward_map,
+                env_idx=i,
             )
             for i in range(kwargs['local_num_envs'])
             ]
@@ -219,7 +226,10 @@ def instanciate_envs(runs_directory, is_main_process, specifc_env_seed, **kwargs
                                 fixed_orientation=kwargs['fixed_orientation'],
                                 seed=kwargs['seed_eval'],
                                 save_video=False,
-                                save_stats=False)()
+                                save_stats=False,
+                                reward_map=reward_map,
+                                env_idx=-1  # this is the evaluation environment
+                                )()
     else:
         raise Exception(f'Environment {kwargs["env_id"]} is not supported')
     return envs, eval_env
@@ -336,7 +346,7 @@ def train(args):
     torch.backends.cudnn.deterministic = args.torch_deterministic
 
     # ENVIRONMENTS creation
-    envs, eval_env = instanciate_envs(runs_directory, accelerator.is_main_process, seed, **args)
+    envs, eval_env = instanciate_envs(runs_directory, accelerator.is_main_process, seed, args.reward_map, **args)
     # dummy variable used later to flag for specific crafter logging
     is_crafter = True if args.env_id == "CrafterReward-v1" else False
     assert isinstance(envs.single_action_space, gym.spaces.Discrete), "only discrete action space is supported"
@@ -408,11 +418,21 @@ def train(args):
     next_text_obs = infos.get('obs', [None]*args.local_num_envs)
     next_obs = torch.Tensor(next_obs).to(device)
     next_done = torch.zeros(args.local_num_envs).to(device)
+
+    from reward_evaluator.reward_evaluator import RewardEvaluator
+    evaluator = RewardEvaluator(reasoning_effort = "medium")
     
     # Save initial environment states
     if accelerator.is_main_process:
         initial_env_save_dir = os.path.join(runs_directory, 'initial_env_states')
         save_initial_env_states(envs, initial_env_save_dir, process_index=accelerator.process_index)
+        if args.reward_map == "GPT":
+            for env_idx in range(envs.num_envs):
+                rewards = evaluator.run(
+                    initial_env_save_dir + f"/process_{accelerator.process_index}_env_{env_idx}_initial.png", 
+                    grid_size=(args.env_area, args.env_area)
+                )
+                reward_maps.set_reward_map(env_idx, rewards)
 
     for iteration in tqdm(range(1, args.num_iterations + 1)):
         

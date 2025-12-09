@@ -426,13 +426,39 @@ def train(args):
     if accelerator.is_main_process:
         initial_env_save_dir = os.path.join(runs_directory, 'initial_env_states')
         save_initial_env_states(envs, initial_env_save_dir, process_index=accelerator.process_index)
+        
         if args.reward_map == "GPT":
+            # Directory for reward map cache
+            reward_map_cache_dir = os.path.join(runs_directory, 'reward_map_cache')
+            os.makedirs(reward_map_cache_dir, exist_ok=True)
+            
+            # Try to load cached reward maps
+            loaded = reward_maps.load_from_file(reward_map_cache_dir, process_index=accelerator.process_index)
+            
+            # Generate missing reward maps
+            generated_count = 0
             for env_idx in range(envs.num_envs):
-                rewards = evaluator.run(
-                    initial_env_save_dir + f"/process_{accelerator.process_index}_env_{env_idx}_initial.png", 
-                    grid_size=(args.env_area, args.env_area)
-                )
-                reward_maps.set_reward_map(env_idx, rewards)
+                if not reward_maps.has_reward_map(env_idx):
+                    print(f"[RewardMap] Generating reward map for env {env_idx} using GPT...")
+                    image_path = os.path.join(
+                        initial_env_save_dir,
+                        f"process_{accelerator.process_index}_env_{env_idx}_initial.png"
+                    )
+                    rewards = evaluator.run(
+                        image_path, 
+                        grid_size=(args.env_area, args.env_area)
+                    )
+                    reward_maps.set_reward_map(env_idx, rewards)
+                    generated_count += 1
+                else:
+                    print(f"[RewardMap] Using cached reward map for env {env_idx}")
+            
+            # Save reward maps if any were newly generated
+            if generated_count > 0:
+                print(f"[RewardMap] Generated {generated_count} new reward maps. Saving to cache...")
+                reward_maps.save_to_file(reward_map_cache_dir, process_index=accelerator.process_index)
+            else:
+                print(f"[RewardMap] All {envs.num_envs} reward maps loaded from cache.")
 
     for iteration in tqdm(range(1, args.num_iterations + 1)):
         

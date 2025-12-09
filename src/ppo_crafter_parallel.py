@@ -448,6 +448,20 @@ def train(args):
                         image_path, 
                         grid_size=(args.env_area, args.env_area)
                     )
+                    
+                    # Validate and log reward map
+                    print(f"[RewardMap] Env {env_idx} - Shape: {len(rewards)}x{len(rewards[0])}")
+                    rewards_array = np.array(rewards)
+                    print(f"[RewardMap] Env {env_idx} - Stats: min={rewards_array.min():.3f}, max={rewards_array.max():.3f}, mean={rewards_array.mean():.3f}")
+                    
+                    # Check for invalid values
+                    if np.isnan(rewards_array).any():
+                        print(f"[WARNING] Env {env_idx} - NaN values detected in reward map! Replacing with 0")
+                        rewards = np.nan_to_num(rewards_array, nan=0.0).tolist()
+                    if np.isinf(rewards_array).any():
+                        print(f"[WARNING] Env {env_idx} - Inf values detected in reward map! Clipping")
+                        rewards = np.clip(rewards_array, -1.0, 1.0).tolist()
+                    
                     reward_maps.set_reward_map(env_idx, rewards)
                     generated_count += 1
                 else:
@@ -496,7 +510,29 @@ def train(args):
                                                  normalization_by_words=args.normalization_by_words,
                                                  action_logits_from_whole_seq=args.action_logits_from_whole_seq,
                                                  advanced_action_matching=args.advanced_action_matching)
+                
+                # Debug: Check for NaN/Inf in action logits
+                if 'action_logits' in res and res['action_logits'] is not None:
+                    logits = res['action_logits']
+                    if torch.isnan(logits).any() or torch.isinf(logits).any():
+                        print(f"[WARNING] NaN/Inf detected in action_logits at step {step}!")
+                        print(f"  logits: {logits}")
+                        print(f"  next_obs stats: min={next_obs.min()}, max={next_obs.max()}, mean={next_obs.mean()}")
+                        # Replace NaN/Inf with valid values to prevent crash
+                        logits = torch.nan_to_num(logits, nan=0.0, posinf=0.0, neginf=-100.0)
+                        # Recreate action sampling with cleaned logits
+                        from torch.distributions.categorical import Categorical as Cat
+                        probs = Cat(logits=logits)
+                        res['action'] = probs.sample()
+                        res['log_prob'] = probs.log_prob(res['action'])
+                        res['entropy'] = probs.entropy()
+                
                 action, logprob, value = res['action'], res['log_prob'], res['values']
+                
+                # Clamp log_prob to prevent -inf (which causes NaN in training)
+                # log_prob of valid probability should be in range [-inf, 0], clamp to [-20, 0]
+                logprob = torch.clamp(logprob, min=-20.0, max=0.0)
+                
                 values[step] = value.flatten()
                 actions[step] = action
                 logprobs[step] = logprob
@@ -506,6 +542,10 @@ def train(args):
             # TRY NOT TO MODIFY: execute the game and log data.
             next_obs, reward, terminations, truncations, infos = envs.step(action.cpu().numpy())
             next_text_obs = infos.get('obs', [None]*args.local_num_envs)
+            
+            # Clip rewards to prevent extreme values (especially important for dense reward maps)
+            if args.reward_map == "GPT":
+                reward = np.clip(reward, -10.0, 10.0)  # Prevent reward explosion
             
             if args.debug:
                 if 'final_observation' in infos: #do not log all the image array
@@ -583,9 +623,23 @@ def train(args):
                                                     generate_actions=args.generate_actions,
                                                     normalization_by_words=args.normalization_by_words,
                                                     advanced_action_matching=args.advanced_action_matching)
+                    
+                    # Handle NaN/Inf in log_prob and entropy during training
                     newlogprob, entropy, newvalue = res['log_prob'], res['entropy'], res['values']
+                    if torch.isnan(newlogprob).any() or torch.isinf(newlogprob).any():
+                        print(f"[WARNING] NaN/Inf in newlogprob during training epoch {epoch}!")
+                        newlogprob = torch.nan_to_num(newlogprob, nan=0.0, posinf=0.0, neginf=-100.0)
+                    if torch.isnan(entropy).any() or torch.isinf(entropy).any():
+                        print(f"[WARNING] NaN/Inf in entropy during training epoch {epoch}!")
+                        entropy = torch.nan_to_num(entropy, nan=0.0, posinf=0.0, neginf=0.0)
 
-                    logratio = newlogprob - b_logprobs[mb_inds]
+                    # Clamp logprobs to prevent extreme ratio values
+                    newlogprob_clamped = torch.clamp(newlogprob, min=-20.0, max=0.0)
+                    old_logprob_clamped = torch.clamp(b_logprobs[mb_inds], min=-20.0, max=0.0)
+                    
+                    logratio = newlogprob_clamped - old_logprob_clamped
+                    # Clamp logratio to prevent exp() overflow
+                    logratio = torch.clamp(logratio, min=-10.0, max=10.0)
                     ratio = logratio.exp()
 
                     with torch.no_grad():

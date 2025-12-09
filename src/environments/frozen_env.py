@@ -125,14 +125,54 @@ class FrozenLakeText(FrozenLakeEnv):
             # 현재 위치의 절대 좌표
             current_pos = self._get_pos(self.s)
             x, y = int(current_pos[0]), int(current_pos[1])
-            rewards = reward_maps.get_reward_map(self.env_idx)
             
-            # Bounds checking
-            if 0 <= y < len(rewards) and 0 <= x < len(rewards[0]):
-                reward = rewards[7 - y][x]  # row-major: [y][x]
-            else:
-                print(f"[WARNING] Position ({x}, {y}) out of bounds for reward map!")
-                reward = 0.0  # fallback
+            try:
+                # Check if reward map exists for this env_idx
+                if not reward_maps.has_reward_map(self.env_idx):
+                    # Reward map not yet generated, use default reward
+                    # This can happen in multi-process setup before main process generates the map
+                    pass  # Keep original reward from super().step()
+                else:
+                    rewards = reward_maps.get_reward_map(self.env_idx)
+                    
+                    if rewards is None:
+                        pass  # Keep original reward
+                    else:
+                        # Bounds checking
+                        grid_rows = len(rewards)
+                        grid_cols = len(rewards[0]) if grid_rows > 0 else 0
+                        
+                        if 0 <= y < grid_rows and 0 <= x < grid_cols:
+                            # row-major: [y][x], inverted y-axis
+                            inverted_y = (grid_rows - 1) - y
+                            raw_reward = rewards[inverted_y][x]
+                            
+                            # Handle NaN/Inf values
+                            if raw_reward is None or np.isnan(raw_reward) or np.isinf(raw_reward):
+                                reward = 0.0
+                            else:
+                                # Clip and scale reward to prevent gradient explosion
+                                # Dense rewards need smaller scale (0.1x) to prevent return explosion
+                                clipped = float(np.clip(raw_reward, -1.0, 1.0))
+                                reward = clipped * 0.1  # Scale down for stable training
+                            
+                            # Debug: 첫 몇 스텝만 출력
+                            if not hasattr(self, '_step_count'):
+                                self._step_count = 0
+                            if self._step_count < 3:
+                                print(f"[DEBUG] Step {self._step_count}: pos=({x},{y}), inverted_y={inverted_y}, reward={reward:.4f}")
+                            self._step_count += 1
+                        else:
+                            print(f"[WARNING] Position ({x}, {y}) out of bounds for reward map (size: {grid_rows}x{grid_cols})!")
+                            # Keep original reward from super().step()
+            except KeyError as e:
+                # Reward map not found for env_idx, use default reward
+                pass
+            except Exception as e:
+                print(f"[ERROR] Failed to get reward from map: {e}")
+                import traceback
+                traceback.print_exc()
+                # Keep original reward from super().step()
         
         # get the effective action
         x, y = self._get_pos(self.s) - self._get_pos(self.prev_s)

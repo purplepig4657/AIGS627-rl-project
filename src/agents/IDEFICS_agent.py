@@ -67,14 +67,27 @@ class IDEFICSAgent(nn.Module, BaseAgent):
         tokens_logprobs = torch.gather(
             shift_logits, 2, shift_labels[:, :, None]
         ).squeeze(-1)
+        
+        # Handle NaN/Inf in tokens_logprobs
+        tokens_logprobs = torch.nan_to_num(tokens_logprobs, nan=0.0, posinf=100.0, neginf=-100.0)
+        
         tokens_logprobs_applied_mask = tokens_logprobs * shift_attention
 
         # Calculate the sum and count of unmasked elements
         sum_unmasked = tokens_logprobs_applied_mask.sum(dim=1)
         count_unmasked = shift_attention.sum(dim=1)
 
+        # Safety check for division by zero
+        count_unmasked = torch.clamp(count_unmasked, min=1.0)
+
         # Calculate the mean
         mean_tokens_logprobs_unmasked = sum_unmasked / count_unmasked
+        
+        # Final safety check for NaN/Inf
+        mean_tokens_logprobs_unmasked = torch.nan_to_num(
+            mean_tokens_logprobs_unmasked, nan=0.0, posinf=100.0, neginf=-100.0
+        )
+        
         return mean_tokens_logprobs_unmasked
 
     def create_prompt_for_action_and_value(self, x, just_value=False, value_prompt_template='{}', action_template='{}', text_description=None):
@@ -180,6 +193,9 @@ class IDEFICSAgent(nn.Module, BaseAgent):
             res_logits.append(res_logit)
         res_logits = torch.cat(res_logits, dim=0).view(batch_dim, -1)
 
+        # Safety: handle NaN/Inf in res_logits before temperature scaling
+        res_logits = torch.nan_to_num(res_logits, nan=0.0, posinf=100.0, neginf=-100.0)
+
         # apply temperature
         if temperature == 'max_logit':
             res_logits = res_logits - res_logits.max(-1, keepdim=True).values
@@ -188,13 +204,28 @@ class IDEFICSAgent(nn.Module, BaseAgent):
         else:
             raise Exception(f"Invalid temperature: {temperature}")
 
+        # Clamp logits to prevent extreme probabilities after softmax
+        # This prevents log_prob from becoming -inf
+        res_logits = torch.clamp(res_logits, min=-50.0, max=50.0)
+
         probs = Categorical(logits=res_logits)
         if action is None:
             action = probs.sample()
 
         output["action"] = action
-        output["log_prob"] = probs.log_prob(action)
-        output["entropy"] = probs.entropy()
+        
+        # Calculate log_prob and entropy with safety checks
+        log_prob = probs.log_prob(action)
+        entropy = probs.entropy()
+        
+        # Clamp log_prob to prevent -inf (happens when probability is near 0)
+        log_prob = torch.clamp(log_prob, min=-20.0, max=0.0)
+        
+        # Handle NaN in entropy
+        entropy = torch.nan_to_num(entropy, nan=0.0, posinf=0.0, neginf=0.0)
+        
+        output["log_prob"] = log_prob
+        output["entropy"] = entropy
 
         output["action_logits"] = probs.logits
 

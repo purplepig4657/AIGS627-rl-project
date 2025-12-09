@@ -122,9 +122,17 @@ class FrozenLakeText(FrozenLakeEnv):
         self.last_action = action
 
         if self.reward_map == "GPT" and self.env_idx != -1:
-            x, y = self._get_pos(self.s) - self._get_pos(self.prev_s)
+            # 현재 위치의 절대 좌표
+            current_pos = self._get_pos(self.s)
+            x, y = int(current_pos[0]), int(current_pos[1])
             rewards = reward_maps.get_reward_map(self.env_idx)
-            reward = rewards[x][y]
+            
+            # Bounds checking
+            if 0 <= y < len(rewards) and 0 <= x < len(rewards[0]):
+                reward = rewards[y][x]  # row-major: [y][x]
+            else:
+                print(f"[WARNING] Position ({x}, {y}) out of bounds for reward map!")
+                reward = 0.0  # fallback
         
         # get the effective action
         x, y = self._get_pos(self.s) - self._get_pos(self.prev_s)

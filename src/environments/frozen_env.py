@@ -129,7 +129,7 @@ class FrozenLakeText(FrozenLakeEnv):
             
             # Bounds checking
             if 0 <= y < len(rewards) and 0 <= x < len(rewards[0]):
-                reward = rewards[y][x]  # row-major: [y][x]
+                reward = rewards[7 - y][x]  # row-major: [y][x]
             else:
                 print(f"[WARNING] Position ({x}, {y}) out of bounds for reward map!")
                 reward = 0.0  # fallback

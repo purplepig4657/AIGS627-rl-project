@@ -346,7 +346,7 @@ def train(args):
     torch.backends.cudnn.deterministic = args.torch_deterministic
 
     # ENVIRONMENTS creation
-    envs, eval_env = instanciate_envs(runs_directory, accelerator.is_main_process, seed, args.reward_map, **args)
+    envs, eval_env = instanciate_envs(runs_directory, accelerator.is_main_process, seed, **args)
     # dummy variable used later to flag for specific crafter logging
     is_crafter = True if args.env_id == "CrafterReward-v1" else False
     assert isinstance(envs.single_action_space, gym.spaces.Discrete), "only discrete action space is supported"

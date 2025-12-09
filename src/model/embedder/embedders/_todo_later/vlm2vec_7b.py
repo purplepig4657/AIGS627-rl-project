@@ -9,9 +9,9 @@ from tqdm import tqdm
 # Your custom modules for Qwen2-VL
 import sys
 sys.path.insert(1, '/root/omdr_workspace/algorithms/VLM2Vec')
-from src.model import MMEBModel
-from src.arguments import ModelArguments
-from src.model_utils import load_processor, QWEN2_VL, vlm_image_tokens
+from model import MMEBModel
+from arguments import ModelArguments
+from model_utils import load_processor, QWEN2_VL, vlm_image_tokens
 
 # Same parent class as MMEmbed
 from embedders.base_embedder import BaseEmbedder

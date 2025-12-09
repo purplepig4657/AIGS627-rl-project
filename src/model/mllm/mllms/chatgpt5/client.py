@@ -9,11 +9,11 @@ from typing import List, Tuple, Dict, Any, Optional
 
 from openai import OpenAI, APIError, APIConnectionError, RateLimitError, APITimeoutError
 
-from src.model.mllm.mllms.chatgpt5._base import ChatGPT5
-from src.model.mllm.data_structure.input import GenerationInput, GenerationParameters
-from src.model.mllm.data_structure.output import GenerationOutput, GenMetadata, APIUsage
-import src.utils.directory as DirectoryUtils
-import src.utils.file_io as FileIOUtils
+from model.mllm.mllms.chatgpt5._base import ChatGPT5
+from model.mllm.data_structure.input import GenerationInput, GenerationParameters
+from model.mllm.data_structure.output import GenerationOutput, GenMetadata, APIUsage
+import utils.directory as DirectoryUtils
+import utils.file_io as FileIOUtils
 from env import CHATGPT_API
 
 

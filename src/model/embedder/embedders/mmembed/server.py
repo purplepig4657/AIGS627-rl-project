@@ -9,17 +9,17 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 
 
-from src.model.embedder.embedders.mmembed.local import MMEmbedLocal
-from src.model.embedder.data_structure.signature import (
+from model.embedder.embedders.mmembed.local import MMEmbedLocal
+from model.embedder.data_structure.signature import (
     EncodeRequest,
     EncodeListRequest,
     EncodeResponse,
     EncodeListResponse,
     InitiateResponse,
 )
-from src.model.embedder.data_structure.input import EncodingInput, EncodingParameters
-import src.utils.directory as DirectoryUtils
-import src.utils.file_io as FileIOUtils
+from model.embedder.data_structure.input import EncodingInput, EncodingParameters
+import utils.directory as DirectoryUtils
+import utils.file_io as FileIOUtils
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

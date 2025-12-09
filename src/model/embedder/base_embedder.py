@@ -3,10 +3,10 @@
 import os
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Tuple
-from src.model.embedder.data_structure.input import EncodingInput, EncodingParameters, OfflineEncodingInput
-from src.model.embedder.data_structure.output import EncodingOutput, EncMetadata
-import src.utils.file_io as IOUtils
-import src.utils.directory as DirectoryUtils
+from model.embedder.data_structure.input import EncodingInput, EncodingParameters, OfflineEncodingInput
+from model.embedder.data_structure.output import EncodingOutput, EncMetadata
+import utils.file_io as IOUtils
+import utils.directory as DirectoryUtils
 
 
 import torch

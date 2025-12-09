@@ -9,7 +9,7 @@ from tqdm import tqdm
 from PIL import Image
 
 # Your existing embedder base class
-from src.model.embedder.base_embedder import BaseEmbedder
+from model.embedder.base_embedder import BaseEmbedder
 
 # ---------------------------------------------------------------------------
 # Re-implementation of ColPali (backbone + adapter) loading/inference logic.

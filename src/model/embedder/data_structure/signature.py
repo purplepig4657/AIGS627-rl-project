@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 
 
-from src.model.embedder.data_structure.input import EncodingInput, EncodingParameters
+from model.embedder.data_structure.input import EncodingInput, EncodingParameters
 
 
 class EncodeRequest(BaseModel):

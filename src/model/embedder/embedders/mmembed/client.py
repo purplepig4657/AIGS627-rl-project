@@ -7,16 +7,16 @@ from dataclasses import asdict
 import requests
 import torch
 
-from src.model.embedder.embedders.mmembed._base import MMEmbed
-from src.model.embedder.data_structure.input import EncodingInput, EncodingParameters, OfflineEncodingInput
-from src.model.embedder.data_structure.output import EncodingOutput, EncMetadata
-from src.model.embedder.data_structure.signature import (
+from model.embedder.embedders.mmembed._base import MMEmbed
+from model.embedder.data_structure.input import EncodingInput, EncodingParameters, OfflineEncodingInput
+from model.embedder.data_structure.output import EncodingOutput, EncMetadata
+from model.embedder.data_structure.signature import (
     EncodeRequest,
     EncodeListRequest,
 )
-import src.utils.directory as DirectoryUtils
-import src.utils.file_io as FileIOUtils
-import src.utils.file_io as IOUtils
+import utils.directory as DirectoryUtils
+import utils.file_io as FileIOUtils
+import utils.file_io as IOUtils
 
 
 

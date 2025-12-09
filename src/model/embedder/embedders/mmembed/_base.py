@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from typing import Type, Dict
-from src.model.embedder.base_embedder import BaseEmbedder
-from src.model.mllm.utils.constants import LoadMode
+from model.embedder.base_embedder import BaseEmbedder
+from model.mllm.utils.constants import LoadMode
 
 
 class MMEmbed(BaseEmbedder):

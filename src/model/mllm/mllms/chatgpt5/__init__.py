@@ -1,7 +1,7 @@
-from src.model.mllm.mllms.chatgpt5._base import ChatGPT5, ChatGPT5_Factory
-from src.model.mllm.mllms.chatgpt5.local import ChatGPT5_Local
-from src.model.mllm.mllms.chatgpt5.client import ChatGPT5_Client
-from src.model.mllm.utils.constants import LoadMode
+from model.mllm.mllms.chatgpt5._base import ChatGPT5, ChatGPT5_Factory
+from model.mllm.mllms.chatgpt5.local import ChatGPT5_Local
+from model.mllm.mllms.chatgpt5.client import ChatGPT5_Client
+from model.mllm.utils.constants import LoadMode
 
 # Register implementations with the factory
 ChatGPT5_Factory.register(LoadMode.LOCAL, ChatGPT5_Local)

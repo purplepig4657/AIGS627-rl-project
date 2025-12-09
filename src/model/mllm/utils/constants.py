@@ -1,7 +1,7 @@
 
 from enum import Enum, unique
 from typing import Optional
-from src.utils.constants import add_enum_utilities
+from utils.constants import add_enum_utilities
 
 
 

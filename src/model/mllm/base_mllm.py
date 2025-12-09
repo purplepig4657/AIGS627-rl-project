@@ -5,11 +5,11 @@ import os
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional, Union, Tuple
 
-from src.model.mllm.data_structure.input  import GenerationInput, GenerationParameters
-from src.model.mllm.data_structure.output import GenerationOutput, GenMetadata
+from model.mllm.data_structure.input  import GenerationInput, GenerationParameters
+from model.mllm.data_structure.output import GenerationOutput, GenMetadata
 
-import src.utils.directory as DirectoryUtils
-import src.utils.file_io as FileIOUtils
+import utils.directory as DirectoryUtils
+import utils.file_io as FileIOUtils
 
 
 class BaseMLLM(ABC):

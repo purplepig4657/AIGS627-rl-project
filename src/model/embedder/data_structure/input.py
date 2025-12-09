@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Union, Tuple, Dict, Any
 
 
-from src.model.embedder.data_structure.output import EncMetadata
+from model.embedder.data_structure.output import EncMetadata
 
 
 

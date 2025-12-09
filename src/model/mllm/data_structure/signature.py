@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 
 
-from src.model.mllm.data_structure.input import GenerationInput, GenerationParameters   
+from model.mllm.data_structure.input import GenerationInput, GenerationParameters   
 
 
 class InferRequest(BaseModel):

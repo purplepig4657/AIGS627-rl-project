@@ -12,9 +12,9 @@ import re
 import json
 from typing import List, Optional, Tuple
 
-from src.model.mllm.mllms.chatgpt5.client import ChatGPT5_Client
-from src.model.mllm.data_structure.input import GenerationInput, GenerationParameters, APIParameters
-from src.reward_evaluator.prompts import REWARD_EVALUATION_SYSTEM_PROMPT, REWARD_EVALUATION_PROMPT
+from model.mllm.mllms.chatgpt5.client import ChatGPT5_Client
+from model.mllm.data_structure.input import GenerationInput, GenerationParameters, APIParameters
+from reward_evaluator.prompts import REWARD_EVALUATION_SYSTEM_PROMPT, REWARD_EVALUATION_PROMPT
 
 
 

@@ -5,15 +5,15 @@ from typing import List, Tuple
 from dataclasses import asdict
 import requests
 
-from src.model.mllm.mllms.qwen2_5_7b._base import Qwen2_5_7B
-from src.model.mllm.data_structure.input import GenerationInput, GenerationParameters
-from src.model.mllm.data_structure.output import GenerationOutput, GenMetadata
-from src.model.mllm.data_structure.signature import (
+from model.mllm.mllms.qwen2_5_7b._base import Qwen2_5_7B
+from model.mllm.data_structure.input import GenerationInput, GenerationParameters
+from model.mllm.data_structure.output import GenerationOutput, GenMetadata
+from model.mllm.data_structure.signature import (
     InferRequest,
     InferListRequest,
 )
-import src.utils.directory as DirectoryUtils
-import src.utils.file_io as FileIOUtils
+import utils.directory as DirectoryUtils
+import utils.file_io as FileIOUtils
 
 
 

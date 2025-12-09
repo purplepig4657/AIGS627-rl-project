@@ -1,2 +1,31 @@
 SmartPlay
 venv
+__pycache__
+
+# Environment variables and API keys
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Models and data
+models/
+*.pt
+*.pth
+*.ckpt

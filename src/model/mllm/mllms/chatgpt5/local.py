@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-from src.model.mllm.mllms.chatgpt5._base import ChatGPT5
-from src.model.mllm.data_structure.input import GenerationInput, GenerationParameters
-from src.model.mllm.data_structure.output import GenerationOutput, GenMetadata
+from model.mllm.mllms.chatgpt5._base import ChatGPT5
+from model.mllm.data_structure.input import GenerationInput, GenerationParameters
+from model.mllm.data_structure.output import GenerationOutput, GenMetadata
 
 
 class ChatGPT5_Local(ChatGPT5):

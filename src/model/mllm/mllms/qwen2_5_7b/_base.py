@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from typing import Type, Dict
-from src.model.mllm.base_mllm import BaseMLLM
-from src.model.mllm.utils.constants import LoadMode
+from model.mllm.base_mllm import BaseMLLM
+from model.mllm.utils.constants import LoadMode
 
 
 class Qwen2_5_7B(BaseMLLM):

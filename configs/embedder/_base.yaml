@@ -1,0 +1,10 @@
+# Base configuration for embedder models
+
+# Path where models are stored
+models_path: "./models"
+
+# Default settings
+default_settings:
+  batch_size: 32
+  max_length: 512
+

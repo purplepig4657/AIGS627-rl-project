@@ -10,10 +10,10 @@ import time
 import traceback
 from tqdm import tqdm
 
-from src.model.mllm.mllms.qwen2_5_vl_7b._base import Qwen2_5_VL_7B
+from model.mllm.mllms.qwen2_5_vl_7b._base import Qwen2_5_VL_7B
 
-from src.model.mllm.data_structure.input import GenerationInput, GenerationParameters
-from src.model.mllm.data_structure.output import GenerationOutput, GenMetadata, TIME_MULTIPLIER_MS
+from model.mllm.data_structure.input import GenerationInput, GenerationParameters
+from model.mllm.data_structure.output import GenerationOutput, GenMetadata, TIME_MULTIPLIER_MS
 
 
 

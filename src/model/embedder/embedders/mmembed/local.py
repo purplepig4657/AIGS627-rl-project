@@ -10,11 +10,11 @@ import torch
 from tqdm import tqdm
 from PIL import Image
 
-from src.model.embedder.embedders.mmembed._base import MMEmbed
-from src.model.embedder.data_structure.input import EncodingInput, EncodingParameters, OfflineEncodingInput
-from src.model.embedder.data_structure.output import EncodingOutput, EncMetadata, TIME_MULTIPLIER_MS
+from model.embedder.embedders.mmembed._base import MMEmbed
+from model.embedder.data_structure.input import EncodingInput, EncodingParameters, OfflineEncodingInput
+from model.embedder.data_structure.output import EncodingOutput, EncMetadata, TIME_MULTIPLIER_MS
 
-import src.utils.file_io as IOUtils
+import utils.file_io as IOUtils
 
 
 

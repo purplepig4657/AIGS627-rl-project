@@ -9,17 +9,17 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 
 
-from src.model.mllm.mllms.qwen2_5_7b.local import Qwen2_5_Local
-from src.model.mllm.data_structure.signature import (
+from model.mllm.mllms.qwen2_5_7b.local import Qwen2_5_Local
+from model.mllm.data_structure.signature import (
     InferRequest,
     InferListRequest,
     InferResponse,
     InferListResponse,
     InitiateResponse,
 )
-from src.model.mllm.data_structure.input import GenerationInput, GenerationParameters
-import src.utils.directory as DirectoryUtils
-import src.utils.file_io as FileIOUtils
+from model.mllm.data_structure.input import GenerationInput, GenerationParameters
+import utils.directory as DirectoryUtils
+import utils.file_io as FileIOUtils
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

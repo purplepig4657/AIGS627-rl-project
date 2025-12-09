@@ -1,0 +1,17 @@
+# Configuration for MMEmbed model
+
+# Local directory name for model storage
+local_dirname: "mmembed"
+
+# Remote server port
+remote_port: 8100
+
+# Vector dimension
+vector_dim: 768
+
+# Model-specific settings
+model_settings:
+  model_name: "mmembed"
+  batch_size: 32
+  max_length: 512
+

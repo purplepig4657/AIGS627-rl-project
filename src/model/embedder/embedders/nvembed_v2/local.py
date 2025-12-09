@@ -9,11 +9,11 @@ import time
 import torch
 from tqdm import tqdm
 
-from src.model.embedder.embedders.nvembed_v2._base import NVEmbedV2
-from src.model.embedder.data_structure.input import EncodingInput, EncodingParameters, OfflineEncodingInput
-from src.model.embedder.data_structure.output import EncodingOutput, EncMetadata, TIME_MULTIPLIER_MS
+from model.embedder.embedders.nvembed_v2._base import NVEmbedV2
+from model.embedder.data_structure.input import EncodingInput, EncodingParameters, OfflineEncodingInput
+from model.embedder.data_structure.output import EncodingOutput, EncMetadata, TIME_MULTIPLIER_MS
 
-import src.utils.file_io as IOUtils
+import utils.file_io as IOUtils
 
 
 
